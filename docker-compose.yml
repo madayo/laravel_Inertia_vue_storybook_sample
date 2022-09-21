@@ -1,0 +1,37 @@
+version: "3.8"
+volumes:
+  db-data:
+services:
+  php:
+    build:
+      context: ./docker/php
+      dockerfile: Dockerfile
+      args:
+        WORK_DIR: /www/application
+    volumes:
+      - ./src:/www/application
+
+  node:
+    build:
+      context: docker/node
+      dockerfile: Dockerfile
+    working_dir: /work
+    ports:
+      - ${STORYBOOK_PORT}:6006
+    volumes:
+      - ./src:/work
+
+  web:
+    build:
+      context: docker/nginx
+      dockerfile: Dockerfile
+      args:
+        WORK_DIR: /www/application
+    depends_on:
+      - php
+    links:
+      - php
+    ports:
+      - ${WEB_PORT}:80
+    volumes:
+      - ./src:/www/application
